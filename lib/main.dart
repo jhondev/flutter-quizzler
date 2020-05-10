@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quizzler/questions.dart';
 
 void main() => runApp(Quizzler());
 
@@ -25,73 +26,130 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+  var scoreKeeper = <Icon>[];
+  var currentQIndex = 0;
+  var quizFinished = false;
+
+  void evalAnswer(QA question, bool answer) {
+    final answerIcon = getAnswerIcon(question.answer == answer);
+    setState(() {
+      scoreKeeper.add(answerIcon);
+      currentQIndex++;
+      if (currentQIndex == questions.length) {
+        currentQIndex = 0;
+        quizFinished = true;
+      }
+    });
+  }
+
+  Icon getAnswerIcon(bool answer) => answer
+      ? Icon(
+          Icons.check,
+          color: Colors.green,
+        )
+      : Icon(
+          Icons.close,
+          color: Colors.red,
+        );
+
   @override
   Widget build(BuildContext context) {
+    var currentQ = questions[currentQIndex];
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Expanded(
-          flex: 5,
-          child: Padding(
-            padding: EdgeInsets.all(10.0),
-            child: Center(
-              child: Text(
-                'This is where the question text will go.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 25.0,
-                  color: Colors.white,
+      children: quizFinished
+          ? <Widget>[
+              Expanded(
+                flex: 8,
+                child: Center(
+                  child: Text(
+                    "Quiz finished",
+                    style: TextStyle(
+                        fontSize: 50,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              textColor: Colors.white,
-              color: Colors.green,
-              child: Text(
-                'True',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: FlatButton(
+                    onPressed: () {
+                      setState(() {
+                        quizFinished = false;
+                        scoreKeeper.clear();
+                      });
+                    },
+                    child: Text("Restart"),
+                    textColor: Colors.white,
+                    color: Colors.green,
+                  ),
                 ),
               ),
-              onPressed: () {
-                //The user picked true.
-              },
-            ),
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              color: Colors.red,
-              child: Text(
-                'False',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  color: Colors.white,
+              Row(
+                children: scoreKeeper,
+              ),
+            ]
+          : <Widget>[
+              Expanded(
+                flex: 5,
+                child: Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Center(
+                    child: Text(
+                      currentQ.question,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 25.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              onPressed: () {
-                //The user picked false.
-              },
-            ),
-          ),
-        ),
-        //TODO: Add a Row here as your score keeper
-      ],
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(15.0),
+                  child: FlatButton(
+                    textColor: Colors.white,
+                    color: Colors.green,
+                    child: Text(
+                      'True',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.0,
+                      ),
+                    ),
+                    onPressed: () {
+                      evalAnswer(currentQ, true);
+                    },
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(15.0),
+                  child: FlatButton(
+                    color: Colors.red,
+                    child: Text(
+                      'False',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                    onPressed: () {
+                      evalAnswer(currentQ, false);
+                    },
+                  ),
+                ),
+              ),
+              Row(
+                children: scoreKeeper,
+              )
+            ],
     );
   }
 }
-
-/*
-question1: 'You can lead a cow down stairs but not up stairs.', false,
-question2: 'Approximately one quarter of human bones are in the feet.', true,
-question3: 'A slug\'s blood is green.', true,
-*/
